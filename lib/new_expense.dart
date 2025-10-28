@@ -6,7 +6,8 @@ import 'package:intl/intl.dart';
 final formatter = DateFormat.yMd();
 
 class NewExpense extends StatefulWidget{
-  const NewExpense({super.key});
+  const NewExpense({super.key, required this.onAddExpense});
+  final void Function(Expense enpense) onAddExpense;
 
   State<NewExpense> createState(){
     return _NewExpenseState();
@@ -17,11 +18,48 @@ class _NewExpenseState extends State<NewExpense> {
   final _titleController = TextEditingController();
   final _amountController = TextEditingController();
   DateTime? _selectedDate;
+  Category _selectedcategory = Category.leisure;
+
   @override
   void dispose(){
     _titleController.dispose();
     _amountController.dispose();
     super.dispose();
+  }
+
+  void _submitExpenseData(){
+    final enteredAmount = double.tryParse(_amountController.text);
+    final amountIsInvalid = enteredAmount ==null||enteredAmount<=0;
+    if(_titleController.text.trim().isEmpty || 
+    amountIsInvalid ||
+    _selectedDate == null)
+    {
+      showDialog(context: context, 
+      builder: (ctx) => AlertDialog(
+        title:const Text("Invalid Input!"),
+        content: const Text("Please make sure to have a valid Title, Date and Amount!",
+        ),
+        actions: [
+          TextButton(
+            onPressed: (){
+              Navigator.pop(ctx);
+            },
+            child: const Text("Okay!"),
+            ),
+          ],
+        ), 
+      );
+      return;
+    }
+    widget.onAddExpense(
+      Expense(
+        title: _titleController.text, 
+        amount: enteredAmount,
+        date: _selectedDate!,
+        category: _selectedcategory
+        ),
+    );
+    Navigator.pop(context);
   }
 
   void _presentDatePicker() async{
@@ -41,7 +79,7 @@ class _NewExpenseState extends State<NewExpense> {
 @override
 Widget build(BuildContext context) {
   return Padding(
-    padding: EdgeInsets.all(16),
+    padding: EdgeInsets.fromLTRB(16, 48, 16, 16),
     child: Column(
       children: [
         TextField(
@@ -85,22 +123,33 @@ Widget build(BuildContext context) {
           Row(
             children: [
               DropdownButton(
+                value: _selectedcategory,
                 items: Category.values.map(
                 (category) => DropdownMenuItem(
-                  child: Text(category.name.toString(),),),).toList(),
-              onChanged: (value){},
+                  value: category,
+                  child: Text(category.name.toUpperCase(),),),
+                  ).toList(),
+              onChanged: (value){
+              if(value == null)
+              {
+                return;
+              }
+              setState((){
+                _selectedcategory = value;
+                print(_selectedcategory);
+              }
+              );
+              },
             ),
             Spacer(),
-            ElevatedButton(onPressed:() {
+            ElevatedButton(
+              onPressed:() {
               Navigator.pop(context);
             },
             child: Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: (){
-                print(_titleController.text);
-                print(_amountController);
-              }, 
+              onPressed: _submitExpenseData,
               child: Text('Save Expense'),
               ),
             ],
