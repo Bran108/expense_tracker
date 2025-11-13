@@ -2,6 +2,7 @@ import 'package:expense_tracker/models/expense.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/cupertino.dart';
 
 final formatter = DateFormat.yMd();
 
@@ -34,10 +35,12 @@ class _NewExpenseState extends State<NewExpense> {
     amountIsInvalid ||
     _selectedDate == null)
     {
-      showDialog(context: context, 
+      showDialog(
+      context: context, 
       builder: (ctx) => AlertDialog(
         title:const Text("Invalid Input!"),
-        content: const Text("Please make sure to have a valid Title, Date and Amount!",
+        content: const Text(
+          "Please make sure to have a valid Title, Date and Amount!",
         ),
         actions: [
           TextButton(
@@ -78,6 +81,7 @@ class _NewExpenseState extends State<NewExpense> {
 
 @override
 Widget build(BuildContext context) {
+  // final keyboardSpace = MediaQuery.of(context).viewInsets.bottom;
   return Padding(
     padding: EdgeInsets.fromLTRB(16, 48, 16, 16),
     child: Column(
