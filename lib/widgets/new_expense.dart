@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
+import 'dart:io';
 
 final formatter = DateFormat.yMd();
 
@@ -21,21 +22,27 @@ class _NewExpenseState extends State<NewExpense> {
   DateTime? _selectedDate;
   Category _selectedcategory = Category.leisure;
 
-  @override
-  void dispose(){
-    _titleController.dispose();
-    _amountController.dispose();
-    super.dispose();
-  }
-
-  void _submitExpenseData(){
-    final enteredAmount = double.tryParse(_amountController.text);
-    final amountIsInvalid = enteredAmount ==null||enteredAmount<=0;
-    if(_titleController.text.trim().isEmpty || 
-    amountIsInvalid ||
-    _selectedDate == null)
-    {
-      showDialog(
+void _showDialog(){
+  if(Platform.isIOS){
+  showCupertinoDialog(
+      context: context, 
+      builder: (ctx) => CupertinoAlertDialog(
+        title:const Text("Invalid Input!"),
+        content: const Text(
+          "Please make sure to have a valid Title, Date and Amount!",
+        ),
+        actions: [
+          TextButton(
+            onPressed: (){
+              Navigator.pop(ctx);
+            },
+            child: const Text("Okay!"),
+            ),
+          ],
+        ), 
+      );
+  } else {
+    showDialog(
       context: context, 
       builder: (ctx) => AlertDialog(
         title:const Text("Invalid Input!"),
@@ -52,6 +59,24 @@ class _NewExpenseState extends State<NewExpense> {
           ],
         ), 
       );
+    }
+  }
+
+  @override
+  void dispose(){
+    _titleController.dispose();
+    _amountController.dispose();
+    super.dispose();
+  }
+
+  void _submitExpenseData(){
+    final enteredAmount = double.tryParse(_amountController.text);
+    final amountIsInvalid = enteredAmount ==null||enteredAmount<=0;
+    if(_titleController.text.trim().isEmpty || 
+      amountIsInvalid ||
+      _selectedDate == null)
+    {
+      _showDialog();
       return;
     }
     widget.onAddExpense(
